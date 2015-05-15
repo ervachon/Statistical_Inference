@@ -1,0 +1,142 @@
+---
+title: "Statistical Inference Project 1"
+author: "Eric VACHON"
+date: "May 2015"
+output: pdf_document
+geometry: margin = 1.2cm
+---
+```{r, echo=FALSE}
+lambda <- 0.2
+n <- 40
+nbSimul <- 1000
+```
+
+## Overview
+In this paper we explain and compare the distribution of `r nbSimul`  simulations of the mean of `r n` exponential distributions and the Central Limit Theorm (CLT).  
+  
+First we compare Sample Mean Versus Theorical Mean, then the Sample Variance 
+Versus Theorical Variance and at end the difference between our simulation and the CLT.
+
+## Requirement and reproductibility
+Library : ggplot2
+```{r,results='hide', message=FALSE, warning=FALSE}
+library(ggplot2)
+```
+If need install it : install.packages("ggplot2")  
+  
+For reproducability, we fixe the seed :  
+```{r}
+set.seed(19)  
+```  
+## Constants of the simulation
+```{r}
+lambda <- 0.2
+n <- 40
+nbSimul <- 1000
+```
+Results :  
+- ${\lambda}$ =`r lambda`  
+- n = `r n`   
+- nbSimul= `r lambda`  
+
+## Theoricals values 
+Mean of exponencial distribution = $\frac{1}{\lambda}$  
+Standard deviation of the mean of n exponencial distribution = $\frac{1}{\lambda}*\frac{1}{\sqrt{n}}$   
+The variance of the mean of n exponencial distribution = $(\frac{1}{\lambda}*\frac{1}{\sqrt{n}})^2$
+```{r}
+theoricalMean <- (1 / lambda)
+theoricalStandardDeviation <- (1 / lambda)*(1/sqrt(n))
+theoricalVariance <- ((1 / lambda)*(1/sqrt(n)))^2
+```
+Results :   
+- theoricalMean = `r theoricalMean`  
+- theoricalStandardDeviation = `r theoricalStandardDeviation`  
+- theoricalVariance = `r theoricalVariance`  
+
+## The data frame of the simulation
+Here we are going to make a data frames with the result of nbSimul=`r nbSimul` means of n=`r n` exponencial distribution
+
+```{r}
+mySimul <- data.frame()
+for  (i in 1 : nbSimul) 
+{  mySimul <-  rbind(mySimul,c(i,mean(rexp(n, lambda))))}
+names(mySimul) <- c('numSimul','valueSimul')
+```
+
+## 1. Sample Mean Versus Theorical Mean
+Now we make the histogram of this `r nbSimul` simulations and put a line of the 
+theorical mean
+```{r,results='hide', message=FALSE, warning=FALSE}
+ggplot(mySimul, aes(x=valueSimul))+
+   geom_histogram(aes(y=..density..), colour="black", fill="white")+
+   geom_density(alpha=.2, fill="#000066")+
+   geom_vline(xintercept=theoricalMean,color="red",linetype="dashed",size=2)+
+   ggtitle("Sample mean Vs Theorical mean")+labs(x = "mean")
+```  
+  
+And we can compare sample mean and theorical mean :
+```{r}
+sampleMean <- mean(mySimul$valueSimul)
+```
+Results :   
+- sampleMean = `r sampleMean`   
+- theoricalMean = `r theoricalMean`  
+$\Rightarrow$ `r abs(round(100*(1-(sampleMean/theoricalMean)),2))`% of difference, so it is a good estimator.  
+
+## 2. Sample Variance Versus Theorical Variance
+Here we must compare the therical variuance and the variance of our simulation :  
+
+```{r}
+simulationVariance <- var(mySimul$valueSimul)
+```
+Results :   
+- simulationVariance = `r simulationVariance`  
+- theoricalVariance = `r theoricalVariance`  
+
+$\Rightarrow$ `r abs(round(100*(1-simulationVariance/theoricalVariance),2))`% of difference, so it is a good estimator.
+
+## 3. Comparaison with CLT  
+Now let's use the formula of the CLT : $\frac{\sqrt n (\bar X_n - \mu)}{\sigma}$ and use n=10, n=50 and n=100 :  
+```{r,results='hide', message=FALSE, warning=FALSE}
+set.seed(17)
+cfunc <- function(n) 
+{  
+   mySimul <- data.frame()
+   for  (i in 1 : nbSimul) 
+   { 
+     theMean <- mean(rexp(n, lambda))
+     mySimul <-  rbind(mySimul,c(sqrt(n)*(theMean - theoricalMean)/ theoricalStandardDeviation,n))
+   }
+   names(mySimul) <- c('x','size')
+   return(mySimul)
+}   
+dat <- data.frame(  rbind(cfunc(10),cfunc(50),cfunc(100)))
+                
+ggplot(dat, aes(x=x))+
+   geom_histogram(aes(y=..density..), colour="black", fill="white")+
+   geom_density(alpha=.2, fill="#000066")+facet_grid(. ~ size)
+```  
+  
+We can see a nice curve center on 0 and become more normal with n greater 
+
+Another ways to know if the distribution is approximately normal we can also draw a normal Quantile-Quantile plot or the wilcoxon test :
+
+```{r}
+qqnorm(mySimul$valueSim, col = 'blue',main = 'Distribution of the simulation')
+qqline(mySimul$valueSim, col = 'red')
+```  
+  
+And the test of wilcoxon to know if it is normal :
+```{r}
+wilcox.test(mySimul$valueSim)
+```
+
+## Conclusion : 
+- The theorical mean and variancee are quite near the simulmation mean and variance
+- with the formula of the CLT we can see a cuvre and with the normal Quantile-Quantile plot the blue circles follow the red line more or less at the extrems but follow it on the middle
+- the p-value of the wilconox test is less than 5%  
+  
+ 
+$\Rightarrow$ So this distribution is approximately normal.
+
+## End of the document  
