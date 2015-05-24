@@ -3,38 +3,118 @@ title: "Statistical Inference Project 2"
 author: "Eric VACHON"
 date: "May 2015"
 output: pdf_document
-geometry: margin = 2cm
+geometry: margin = 1.5cm
 ---
-
+ 
 ## Overview
-In this paper we explain and compare ...  
-  
-
+In this work we decsribe and analyse the "ToothGrowth data" and we are going to compare tooth growth by supp and dose. We are going to use confidence intervals and/or hypothesis tests to compare them before concluing.  
+ 
 ##Description
-The data "ToothGrowth" is The Effect of Vitamin C on Tooth Growth in Guinea Pigs.  
+The data "ToothGrowth" is the Effect of Vitamin C on Tooth Growth in Guinea Pigs.  
+The response is the length of odontoblasts (teeth) in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice : OJ or ascorbic acid : VC). 
 
-The response is the length of odontoblasts (teeth) in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice or ascorbic acid).  
 
-A data frame with 60 observations on 3 variables.  
-[,1]  len   numeric 	Tooth length  
-[,2] 	supp 	factor 	Supplement type (VC or OJ).  
-[,3] 	dose 	numeric 	Dose in milligrams.   
-
-## Requirement 
-Library : ggplot2
-```{r,results='hide', message=FALSE, warning=FALSE}
-library(ggplot2)
-```
-If need install it : install.packages("ggplot2")  
-
-## Load the data set
+## Load the data set and Basic summary 
 ```{r}
 data(ToothGrowth)
-```
-## Basic summary of the data set
-```{r}
 summary(ToothGrowth)
 str(ToothGrowth)
+head(ToothGrowth)
+```
+This data frame with 60 observations on 3 variables : len, supp and dose.
+## Ploting the raw data
+```{r,results='hide', message=FALSE, warning=FALSE}
+library(ggplot2)
+ggplot(ToothGrowth, aes(x = dose, y = len, colour = dose)) + stat_summary(aes(group = 1),
+       geom = "line", fun.y = mean, size = 1, col = "black") + facet_grid(. ~ supp) + geom_point()
+ggplot(ToothGrowth, aes(x = supp, y = len)) + geom_point() + facet_wrap(~ dose) + 
+       geom_boxplot(aes(fill = supp))
+```
+ 
+## Hypothesis tests
+Now we are goinf to compare tooth growth by supp and dose.  
+  
+Hypothesis tests :  
+- H0 is : there is no differnce on growth by giving a specific dose with VC or OJ.  
+- Ha is : there is difference on growth by giving a specific dose with VC or OJ.  
+ 
+So we have 3 hypothesis because we have 3 doses  :  
+Hypothesis 1 (0.5g) : H0 : mu(OJ/0.5) == mu(VC/0.5) Vs Ha : mu(OJ/0.5) <> mu(VC/0.5)  
+Hypothesis 2 (1g)   : H0 : mu(OJ/1.0) == mu(VC/1.0) Vs Ha : mu(OJ/1.0) <> mu(VC/1.0)   
+Hypothesis 3 (2g)   : H0 : mu(OJ/2.0) == mu(VC/2.0) Vs Ha : mu(OJ/2.0) <> mu(VC/2.0)    
+ 
+## Confidence intervals 
+There we are going to do a t test with **var.equal = FALSE**  (cf. Appendix)
+
+* Hypothesis 1  
+```{r}
+p1<- t.test(ToothGrowth[ToothGrowth$supp == "OJ" & ToothGrowth$dose == 0.5,]$len, 
+            ToothGrowth[ToothGrowth$supp == "VC" & ToothGrowth$dose == 0.5,]$len,var.equal = FALSE)
 ```
 
+* Hypothesis 2  
+```{r}
+p2 <- t.test(ToothGrowth[ToothGrowth$supp == "OJ" & ToothGrowth$dose == 1,]$len, 
+             ToothGrowth[ToothGrowth$supp == "VC" & ToothGrowth$dose == 1,]$len,var.equal = FALSE)
+```
 
+* Hypothesis 3
+```{r}
+p3 <- t.test(ToothGrowth[ToothGrowth$supp == "OJ" & ToothGrowth$dose == 2,]$len, 
+             ToothGrowth[ToothGrowth$supp == "VC" & ToothGrowth$dose == 2,]$len,var.equal = FALSE)
+```
+   
+## Conclusion
+In first we can notice that the vitamine C **has effect** on Tooth Growth.   
+
+Second we are going to analyse the delivery methods by dose :  
+   
+* Hypothesis 1
+t test value = `r p1$statistic`  
+P value      = `r p1$p.value`  
+conf int     = `r p1$conf.int`  
+$\Rightarrow$ p value les than 0.05 so **we can reject H0** : the is a **significant  difference** between the two delivery methods with the same dose of 0.5 mg.
+  
+* Hypothesis 2
+t test value = `r p2$statistic`  
+P value      = `r p2$p.value`  
+conf int     = `r p2$conf.int`  
+$\Rightarrow$ p value les than 0.05 so **we can reject H0** : the is a **significant  difference** between the two delivery methods with the same dose of 1 mg. 
+  
+* Hypothesis 3
+t test value = `r p3$statistic`  
+P value      = `r p3$p.value`  
+conf int     = `r p3$conf.int`  
+$\Rightarrow$ p value les than 0.05 so we can **not** reject H0 : this is **no** significant difference between the two delivery methods with the same dose of 2 mg.
+
+In conclusion we ca said that the orange juice has more effect on growth with dose 0.5 and 1g dose but with 2g dose there is no significant difference.  
+
+## Appendix
+
+We done three t.test but before we had test if the variances are egals or not :  
+
+* Hypothesis 1
+```{r}
+var.test(ToothGrowth[ToothGrowth$supp == "OJ" & ToothGrowth$dose == 0.5,]$len, 
+         ToothGrowth[ToothGrowth$supp == "VC" & ToothGrowth$dose == 0.5,]$len)$p.value
+p1
+```
+p value  > 5% so we are going to do a t test with **var.equal = FALSE**  
+
+* Hypothesis 2  
+```{r}
+var.test(ToothGrowth[ToothGrowth$supp == "OJ" & ToothGrowth$dose == 1,]$len, 
+         ToothGrowth[ToothGrowth$supp == "VC" & ToothGrowth$dose == 1,]$len)$p.value
+p2
+```
+p value  > 5% so we are going to do a t test with **var.equal = FALSE**   
+
+* Hypothesis 3  
+```{r}
+var.test(ToothGrowth[ToothGrowth$supp == "OJ" & ToothGrowth$dose == 2,]$len, 
+         ToothGrowth[ToothGrowth$supp == "VC" & ToothGrowth$dose == 2,]$len)$p.value
+p3
+```
+p value  > 5% so we are going to do a t test with **var.equal = FALSE**   
+  
+## End of the document  

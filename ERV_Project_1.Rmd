@@ -10,22 +10,15 @@ lambda <- 0.2
 n <- 40
 nbSimul <- 1000
 ```
-
 ## Overview
-In this paper we explain and compare the distribution of `r nbSimul`  simulations of the mean of `r n` exponential distributions and the Central Limit Theorm (CLT).  
-  
+In this paper we explain and compare the distribution of `r nbSimul`  simulations of the mean of `r n` exponential distributions and the Central Limit Theorm (CLT). 
 First we compare Sample Mean Versus Theorical Mean, then the Sample Variance 
 Versus Theorical Variance and at end the difference between our simulation and the CLT.
 
 ## Requirement and reproductibility
-Library : ggplot2
+Library : ggplot2 (If need install it : install.packages("ggplot2")) and for reproducability, we fixe the seed :
 ```{r,results='hide', message=FALSE, warning=FALSE}
 library(ggplot2)
-```
-If need install it : install.packages("ggplot2")  
-  
-For reproducability, we fixe the seed :  
-```{r}
 set.seed(19)  
 ```  
 ## Constants of the simulation
@@ -34,11 +27,10 @@ lambda <- 0.2
 n <- 40
 nbSimul <- 1000
 ```
-Results :  
-- ${\lambda}$ =`r lambda`  
-- n = `r n`   
-- nbSimul= `r lambda`  
-
+Results : 
+- ${\lambda}$ =`r lambda` 
+- n = `r n` 
+- nbSimul= `r nbSimul` 
 ## Theoricals values 
 Mean of exponencial distribution = $\frac{1}{\lambda}$  
 Standard deviation of the mean of n exponencial distribution = $\frac{1}{\lambda}*\frac{1}{\sqrt{n}}$   
@@ -96,7 +88,7 @@ Results :
 $\Rightarrow$ `r abs(round(100*(1-simulationVariance/theoricalVariance),2))`% of difference, so it is a good estimator.
 
 ## 3. Comparaison with CLT  
-Now let's use the formula of the CLT : $\frac{\sqrt n (\bar X_n - \mu)}{\sigma}$ and use n=10, n=50 and n=100 :  
+Now let's use the formula of the CLT : $\frac{\sqrt n (\bar X_n - \mu)}{\sigma}$ and use n=10 and n=100 :  
 ```{r,results='hide', message=FALSE, warning=FALSE}
 set.seed(17)
 cfunc <- function(n) 
@@ -110,7 +102,7 @@ cfunc <- function(n)
    names(mySimul) <- c('x','size')
    return(mySimul)
 }   
-dat <- data.frame(  rbind(cfunc(10),cfunc(50),cfunc(100)))
+dat <- data.frame(  rbind(cfunc(10),cfunc(100)))
                 
 ggplot(dat, aes(x=x))+
    geom_histogram(aes(y=..density..), colour="black", fill="white")+
@@ -119,24 +111,32 @@ ggplot(dat, aes(x=x))+
   
 We can see a nice curve center on 0 and become more normal with n greater 
 
-Another ways to know if the distribution is approximately normal we can also draw a normal Quantile-Quantile plot or the wilcoxon test :
+## Conclusion : 
+1. The theorical mean and variancee are quite near the simulmation mean and variance 
+2. With the formula of the CLT we can see a cuvre 
+  
+$\Rightarrow$ So this distribution is approximately normal.
 
+\newpage  
+
+## Appendix  
+Another ways to know if the distribution is approximately normal we can also draw a normal Quantile-Quantile plot or use the wilcoxon test :
+
+### Quantile-Quantile plot
 ```{r}
 qqnorm(mySimul$valueSim, col = 'blue',main = 'Distribution of the simulation')
 qqline(mySimul$valueSim, col = 'red')
 ```  
+
+With the normal Quantile-Quantile plot the blue circles follow the red line more or less at the extrems but follow it on the middle 
+$\Rightarrow$ So this distribution is approximately normal.
   
-And the test of wilcoxon to know if it is normal :
+### wilcoxon test
 ```{r}
 wilcox.test(mySimul$valueSim)
 ```
 
-## Conclusion : 
-- The theorical mean and variancee are quite near the simulmation mean and variance
-- with the formula of the CLT we can see a cuvre and with the normal Quantile-Quantile plot the blue circles follow the red line more or less at the extrems but follow it on the middle
-- the p-value of the wilconox test is less than 5%  
-  
- 
+the p-value of the wilconox test is less than 5% 
 $\Rightarrow$ So this distribution is approximately normal.
 
 ## End of the document  
